@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import "./PneumoniaDetection.css";
+import { ColorRing } from "react-loader-spinner";
 
 const PneumoniaDetection = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [prediction, setPrediction] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -13,11 +15,12 @@ const PneumoniaDetection = () => {
   };
 
   const handleDetectButtonClick = async () => {
+    setPrediction(null);
     if (selectedImage) {
       // Create a FormData object to send the image to the Django API
       const formData = new FormData();
       formData.append("image", selectedImage);
-
+      setIsLoading(true);
       try {
         // Make an API call to your Django server
         const response = await fetch("http://127.0.0.1:8000/api/predict/", {
@@ -33,6 +36,8 @@ const PneumoniaDetection = () => {
         }
       } catch (error) {
         console.error("Error communicating with the server:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -56,8 +61,19 @@ const PneumoniaDetection = () => {
         )}
       </div>
       <button className="detect-button" onClick={handleDetectButtonClick}>
-        Detect Pneumonia
+        Detect
       </button>
+      {isLoading && (
+        <ColorRing
+          visible={true}
+          height="80"
+          width="80"
+          ariaLabel="color-ring-loading"
+          wrapperStyle={{}}
+          wrapperClass="color-ring-wrapper"
+          colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
+        />
+      )}
       {prediction !== null && (
         <p
           className={`prediction-text ${
